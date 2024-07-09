@@ -46,3 +46,9 @@ func ParseAnalyzeResultsRequestParam(r *http.Request) (domain.AnalyzeLotteryResu
 	}
 	return reqParams, nil
 }
+func ParseGetLotteriesRequestParam(r *http.Request) (domain.GetLotteriesRequest, error) {
+	reqParams := domain.GetLotteriesRequest{}
+	lotteryName := r.URL.Query().Get("lottery_name")
+	reqParams.LotteryName = lotteryName
+	return reqParams, nil
+}

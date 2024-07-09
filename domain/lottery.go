@@ -43,7 +43,9 @@ type AnalyzeLotteryResultResponse struct {
 	LotteryName string                       `json:"lottery_name,omitempty"`
 	Results     []CheckLotteryResultResponse `json:"results"`
 }
-
+type GetLotteriesRequest struct {
+	LotteryName string
+}
 type PdfData struct {
 	Name string
 	Date string
