@@ -19,6 +19,7 @@ func init() {
 	uri := os.Getenv("MONGO_URI")
 	dbname := os.Getenv("MONGO_DB_NAME")
 	colname := os.Getenv("MONGO_COL_NAME")
+	log.Println("uri is", uri, dbname, colname)
 
 	clientOption := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(context.TODO(), clientOption)
