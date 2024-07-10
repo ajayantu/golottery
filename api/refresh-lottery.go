@@ -17,7 +17,8 @@ func RefreshResults(w http.ResponseWriter, r *http.Request) {
 		}})
 		return
 	}
-	myresults := db.GetLatestResult()
+	collection := db.ConnectDB()
+	myresults := db.GetLatestResult(collection)
 
 	var results []domain.GetLotteryResultRespose
 	for _, item := range pdfdatas {
@@ -38,7 +39,7 @@ func RefreshResults(w http.ResponseWriter, r *http.Request) {
 				}})
 				return
 			}
-			db.CreateResult(result)
+			db.CreateResult(collection, result)
 		}
 	}
 

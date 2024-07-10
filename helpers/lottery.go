@@ -8,7 +8,8 @@ import (
 )
 
 func ExtractResultsFromLink(seriesName string, pdfLink string) (domain.GetLotteryResultRespose, error) {
-	result := db.GetByLotteryName(seriesName)
+	collection := db.ConnectDB()
+	result := db.GetByLotteryName(collection, seriesName)
 	fmt.Println("the fetched result for loteryname is", result)
 	if result.LotteryName != "" {
 		return result, nil

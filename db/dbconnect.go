@@ -13,9 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var collection *mongo.Collection
-
-func init() {
+func ConnectDB() *mongo.Collection {
+	var collection *mongo.Collection
 	uri := os.Getenv("MONGO_URI")
 	dbname := os.Getenv("MONGO_DB_NAME")
 	colname := os.Getenv("MONGO_COL_NAME")
@@ -31,9 +30,10 @@ func init() {
 	collection = client.Database(dbname).Collection(colname)
 
 	fmt.Println("collection reference is ready", collection)
+	return collection
 }
 
-func getAllResults() []primitive.M {
+func getAllResults(collection *mongo.Collection) []primitive.M {
 	cur, err := collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		log.Fatal(err)
@@ -53,7 +53,7 @@ func getAllResults() []primitive.M {
 	return results
 }
 
-func getLatestResult() primitive.M {
+func getLatestResult(collection *mongo.Collection) primitive.M {
 	var myresult bson.M
 	opts := options.FindOne().SetSort(bson.D{{"lotterydate", -1}})
 	result := collection.FindOne(context.TODO(), bson.D{}, opts)
@@ -63,7 +63,7 @@ func getLatestResult() primitive.M {
 	}
 	return myresult
 }
-func getByLotteryName(lotteryName string) primitive.M {
+func getByLotteryName(collection *mongo.Collection, lotteryName string) primitive.M {
 	var myresult bson.M
 	filter := bson.M{"lotteryname": lotteryName}
 	result := collection.FindOne(context.Background(), filter)
@@ -82,8 +82,8 @@ func insertOneResult(result domain.GetLotteryResultRespose, collection *mongo.Co
 	fmt.Println("inserted 1 result in db with id:")
 }
 
-func GetMyAllResults() []domain.GetLotteryResultRespose {
-	allresults := getAllResults()
+func GetMyAllResults(collection *mongo.Collection) []domain.GetLotteryResultRespose {
+	allresults := getAllResults(collection)
 	var results []domain.GetLotteryResultRespose
 	for _, value := range allresults {
 		result := domain.GetLotteryResultRespose{}
@@ -97,9 +97,9 @@ func GetMyAllResults() []domain.GetLotteryResultRespose {
 	}
 	return results
 }
-func GetLatestResult() domain.GetLotteryResultRespose {
+func GetLatestResult(collection *mongo.Collection) domain.GetLotteryResultRespose {
 	result := domain.GetLotteryResultRespose{}
-	value := getLatestResult()
+	value := getLatestResult(collection)
 	resultJson, err := bson.Marshal(value)
 	if err != nil {
 		log.Fatal(err)
@@ -107,9 +107,9 @@ func GetLatestResult() domain.GetLotteryResultRespose {
 	bson.Unmarshal(resultJson, &result)
 	return result
 }
-func GetByLotteryName(lotteryName string) domain.GetLotteryResultRespose {
+func GetByLotteryName(collection *mongo.Collection, lotteryName string) domain.GetLotteryResultRespose {
 	result := domain.GetLotteryResultRespose{}
-	value := getByLotteryName(lotteryName)
+	value := getByLotteryName(collection, lotteryName)
 	resultJson, err := bson.Marshal(value)
 	if err != nil {
 		log.Fatal(err)
@@ -117,6 +117,6 @@ func GetByLotteryName(lotteryName string) domain.GetLotteryResultRespose {
 	bson.Unmarshal(resultJson, &result)
 	return result
 }
-func CreateResult(result domain.GetLotteryResultRespose) {
+func CreateResult(collection *mongo.Collection, result domain.GetLotteryResultRespose) {
 	insertOneResult(result, collection)
 }
