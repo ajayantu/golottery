@@ -18,7 +18,6 @@ func ConnectDB() *mongo.Collection {
 	uri := os.Getenv("MONGO_URI")
 	dbname := os.Getenv("MONGO_DB_NAME")
 	colname := os.Getenv("MONGO_COL_NAME")
-	log.Println("uri is", uri, dbname, colname)
 
 	clientOption := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(context.TODO(), clientOption)
@@ -63,15 +62,15 @@ func getLatestResult(collection *mongo.Collection) primitive.M {
 	}
 	return myresult
 }
-func getByLotteryName(collection *mongo.Collection, lotteryName string) primitive.M {
+func getByLotteryName(collection *mongo.Collection, lotteryName string) (primitive.M, error) {
 	var myresult bson.M
 	filter := bson.M{"lotteryname": lotteryName}
 	result := collection.FindOne(context.Background(), filter)
 	err := result.Decode(&myresult)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return myresult
+	return myresult, nil
 }
 func insertOneResult(result domain.GetLotteryResultRespose, collection *mongo.Collection) {
 	_, err := collection.InsertOne(context.Background(), result)
@@ -109,7 +108,10 @@ func GetLatestResult(collection *mongo.Collection) domain.GetLotteryResultRespos
 }
 func GetByLotteryName(collection *mongo.Collection, lotteryName string) domain.GetLotteryResultRespose {
 	result := domain.GetLotteryResultRespose{}
-	value := getByLotteryName(collection, lotteryName)
+	value, err := getByLotteryName(collection, lotteryName)
+	if err != nil {
+		return domain.GetLotteryResultRespose{}
+	}
 	resultJson, err := bson.Marshal(value)
 	if err != nil {
 		log.Fatal(err)

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"lotteryapi/db"
 	"lotteryapi/domain"
 	"lotteryapi/helpers"
 	"net/http"
@@ -25,8 +26,10 @@ func CheckResults(w http.ResponseWriter, r *http.Request) {
 	}
 	var finalResults domain.CheckLotteryResultResponse
 
-	//Normal mode
-	finalResults, err = helpers.EvaluateResultsFromLink(pdfdatas[0].Name, pdfdatas[0].Link, reqParams.LotteryCodes)
+	collection := db.ConnectDB()
+	dbResults := db.GetMyAllResults(collection)
+	pdfMap := helpers.MapPdfResultToName(dbResults)
+	finalResults, err = helpers.EvaluateResultsFromLink(pdfdatas[0].Name, pdfdatas[0].Link, reqParams.LotteryCodes, pdfMap)
 	if err != nil {
 		helpers.Fail(w, http.StatusInternalServerError, []helpers.FailStruct{{
 			Message:    err.Error(),

@@ -2,18 +2,11 @@ package helpers
 
 import (
 	"fmt"
-	"lotteryapi/db"
 	"lotteryapi/domain"
 	"strings"
 )
 
 func ExtractResultsFromLink(seriesName string, pdfLink string) (domain.GetLotteryResultRespose, error) {
-	collection := db.ConnectDB()
-	result := db.GetByLotteryName(collection, seriesName)
-	fmt.Println("the fetched result for loteryname is", result)
-	if result.LotteryName != "" {
-		return result, nil
-	}
 	pdfText, err := ExtractTextFromPDF(pdfLink)
 	if err != nil {
 		return domain.GetLotteryResultRespose{}, fmt.Errorf("error in extracting text from pdf")
@@ -25,10 +18,17 @@ func ExtractResultsFromLink(seriesName string, pdfLink string) (domain.GetLotter
 	return results, nil
 }
 
-func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []string) (domain.CheckLotteryResultResponse, error) {
-	results, err := ExtractResultsFromLink(seriesName, pdfLink)
-	if err != nil {
-		return domain.CheckLotteryResultResponse{}, err
+func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []string, pdfMap map[string]domain.GetLotteryResultRespose) (domain.CheckLotteryResultResponse, error) {
+	dbResults := pdfMap[seriesName]
+	var results domain.GetLotteryResultRespose
+	var err error
+	if dbResults.LotteryName != "" {
+		results = dbResults
+	} else {
+		results, err = ExtractResultsFromLink(seriesName, pdfLink)
+		if err != nil {
+			return domain.CheckLotteryResultResponse{}, err
+		}
 	}
 
 	//evaluate result
@@ -58,7 +58,7 @@ func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []s
 	return finalResponse, nil
 }
 
-func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string) (domain.AnalyzeLotteryResultResponse, error) {
+func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfMap map[string]domain.GetLotteryResultRespose) (domain.AnalyzeLotteryResultResponse, error) {
 	var finalResults domain.AnalyzeLotteryResultResponse
 
 	//create the lottery codes struct
@@ -88,7 +88,7 @@ func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string) (dom
 		for key, val := range lotteryCodesMap {
 			if strings.Contains(item.Name, key) || key == "All" {
 				//check if item/lotterypdf contains  lotterycodes from map
-				results, err := EvaluateResultsFromLink(item.Name, item.Link, val)
+				results, err := EvaluateResultsFromLink(item.Name, item.Link, val, pdfMap)
 				if err != nil {
 					return domain.AnalyzeLotteryResultResponse{}, err
 				}
@@ -134,4 +134,11 @@ func MapPdfDatas(pdfDatas []domain.PdfData) map[string][]domain.PdfData {
 		}
 	}
 	return mapedData
+}
+func MapPdfResultToName(pdfResults []domain.GetLotteryResultRespose) map[string]domain.GetLotteryResultRespose {
+	pdfMap := make(map[string]domain.GetLotteryResultRespose)
+	for _, item := range pdfResults {
+		pdfMap[item.LotteryName] = item
+	}
+	return pdfMap
 }
