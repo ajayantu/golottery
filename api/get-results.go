@@ -17,7 +17,7 @@ func GetResults(w http.ResponseWriter, r *http.Request) {
 	pdfdatas, err := helpers.ExtractPdfLink(reqBody.SeriesName)
 	if err != nil || len(pdfdatas) == 0 {
 		helpers.Fail(w, http.StatusInternalServerError, []helpers.FailStruct{{
-			Message:    err.Error(),
+			Message:    "error in extracting pdf link",
 			ErrorField: "get pdf link",
 		}})
 		return

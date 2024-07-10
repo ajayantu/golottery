@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type GetLotteryResultRequest struct {
 	SeriesName string
 }
@@ -9,7 +11,8 @@ type PrizeCodes struct {
 }
 type GetLotteryResultRespose struct {
 	LotteryName    string                `json:"lottery_name"`
-	LotteryDate    string                `json:"lottery_date"`
+	LotteryLink    string                `json:"lottery_link"`
+	LotteryDate    time.Time             `json:"lottery_date"`
 	LotteryTime    string                `json:"lottery_time"`
 	LotteryResults map[string]PrizeCodes `json:"lottery_results"`
 }
@@ -35,7 +38,7 @@ type EvaluateResultsResponse struct {
 }
 type CheckLotteryResultResponse struct {
 	SeriesName  string                    `json:"series_name,omitempty"`
-	LotteryDate string                    `json:"series_date,omitempty"`
+	LotteryDate time.Time                 `json:"series_date,omitempty"`
 	LotteryTime string                    `json:"series_time,omitempty"`
 	Results     []EvaluateResultsResponse `json:"results"`
 }
