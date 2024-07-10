@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"lotteryapi/domain"
 	"regexp"
@@ -53,7 +54,7 @@ func ExtractTextFromPDF(fileUrl string) (string, error) {
 	return textContent.String(), nil
 }
 
-func ExtractResults(seriesName string, pdfText string) (domain.GetLotteryResultRespose, error) {
+func ExtractResults(seriesName string, seriesLink string, pdfText string) (domain.GetLotteryResultRespose, error) {
 	extractResultString := `((?:\d+\S{2}|Cons)\sPrize)>(.*?)(<|EOF)`
 	splitResultString := `([A-Z]{1,2} \d+)|(\d{4})`
 	extractResultRegex := regexp.MustCompile(extractResultString)
@@ -95,11 +96,15 @@ func ExtractResults(seriesName string, pdfText string) (domain.GetLotteryResultR
 	dateTime := dateTimeRegex.FindAllStringSubmatch(pdfText, -1)
 
 	//add to domain struct
+	parsedDate, err := time.Parse("02/01/2006", dateTime[0][1])
+	if err != nil {
+		return domain.GetLotteryResultRespose{}, fmt.Errorf("error in parsing date")
+	}
 	if len(dateTime) >= 1 && len(dateTime[0]) >= 3 {
-		finalResults := domain.GetLotteryResultRespose{LotteryName: seriesName, LotteryDate: dateTime[0][1], LotteryTime: dateTime[0][2], LotteryResults: resultsMap}
+		finalResults := domain.GetLotteryResultRespose{LotteryName: seriesName, LotteryLink: seriesLink, LotteryDate: parsedDate, LotteryTime: dateTime[0][2], LotteryResults: resultsMap}
 		return finalResults, nil
 	}
-	finalResults := domain.GetLotteryResultRespose{LotteryName: seriesName, LotteryDate: "", LotteryTime: "", LotteryResults: resultsMap}
+	finalResults := domain.GetLotteryResultRespose{LotteryName: seriesName, LotteryLink: seriesLink, LotteryTime: "", LotteryResults: resultsMap}
 	return finalResults, nil
 }
 

@@ -2,16 +2,22 @@ package helpers
 
 import (
 	"fmt"
+	"lotteryapi/db"
 	"lotteryapi/domain"
 	"strings"
 )
 
 func ExtractResultsFromLink(seriesName string, pdfLink string) (domain.GetLotteryResultRespose, error) {
+	result := db.GetByLotteryName(seriesName)
+	fmt.Println("the fetched result for loteryname is", result)
+	if result.LotteryName != "" {
+		return result, nil
+	}
 	pdfText, err := ExtractTextFromPDF(pdfLink)
 	if err != nil {
 		return domain.GetLotteryResultRespose{}, fmt.Errorf("error in extracting text from pdf")
 	}
-	results, err := ExtractResults(seriesName, pdfText)
+	results, err := ExtractResults(seriesName, pdfLink, pdfText)
 	if err != nil {
 		return domain.GetLotteryResultRespose{}, fmt.Errorf("error in extracting text from pdf")
 	}

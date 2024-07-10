@@ -15,6 +15,7 @@ func main() {
 	r.Get("/check-results", handler.CheckResults)
 	r.Get("/analyze-results", handler.AnalyzeResults)
 	r.Get("/get-lotteries", handler.GetLotteries)
+	r.Get("/refresh-results", handler.RefreshResults)
 	r.Get("/hello", handler.Hello)
 	err := http.ListenAndServe(":8080", r)
 	if err != nil {
