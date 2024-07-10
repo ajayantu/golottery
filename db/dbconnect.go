@@ -52,15 +52,15 @@ func getAllResults(collection *mongo.Collection) []primitive.M {
 	return results
 }
 
-func getLatestResult(collection *mongo.Collection) primitive.M {
+func getLatestResult(collection *mongo.Collection) (primitive.M, error) {
 	var myresult bson.M
 	opts := options.FindOne().SetSort(bson.D{{"lotterydate", -1}})
 	result := collection.FindOne(context.TODO(), bson.D{}, opts)
 	err := result.Decode(&myresult)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return myresult
+	return myresult, nil
 }
 func getByLotteryName(collection *mongo.Collection, lotteryName string) (primitive.M, error) {
 	var myresult bson.M
@@ -98,7 +98,10 @@ func GetMyAllResults(collection *mongo.Collection) []domain.GetLotteryResultResp
 }
 func GetLatestResult(collection *mongo.Collection) domain.GetLotteryResultRespose {
 	result := domain.GetLotteryResultRespose{}
-	value := getLatestResult(collection)
+	value, err := getLatestResult(collection)
+	if err != nil {
+		return domain.GetLotteryResultRespose{}
+	}
 	resultJson, err := bson.Marshal(value)
 	if err != nil {
 		log.Fatal(err)

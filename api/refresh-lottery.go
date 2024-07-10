@@ -30,7 +30,7 @@ func RefreshResults(w http.ResponseWriter, r *http.Request) {
 			}})
 			return
 		}
-		if isGreater {
+		if isGreater || myresults.LotteryName == "" {
 			result, err := helpers.ExtractResultsFromLink(item.Name, item.Link)
 			if err != nil {
 				helpers.Fail(w, http.StatusInternalServerError, []helpers.FailStruct{{
