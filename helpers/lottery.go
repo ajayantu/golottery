@@ -61,30 +61,26 @@ func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []s
 
 func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfMap map[string]domain.GetLotteryResultRespose) (domain.AnalyzeLotteryResultResponse, error) {
 	var finalResults domain.AnalyzeLotteryResultResponse
-
-	//create the lottery codes struct
+	lotteryMap := map[byte]string{
+		'F': "FIFTY-FIFTY",
+		'S': "STHREE-SAKTHI",
+		'W': "WIN-WIN",
+		'A': "AKSHAYA",
+		'K': "KARUNYA(KR",
+		'N': "NIRMAL",
+		'P': "KARUNYA PLUS",
+	}
 	lotteryCodesMap := make(map[string][]string)
 	for _, item := range lotteryCodes {
-		switch item[0] {
-		case 'F':
-			lotteryCodesMap["FIFTY-FIFTY"] = append(lotteryCodesMap["FIFTY-FIFTY"], item)
-		case 'S':
-			lotteryCodesMap["STHREE-SAKTHI"] = append(lotteryCodesMap["STHREE-SAKTHI"], item)
-		case 'W':
-			lotteryCodesMap["WIN-WIN"] = append(lotteryCodesMap["WIN-WIN"], item)
-		case 'A':
-			lotteryCodesMap["AKSHAYA"] = append(lotteryCodesMap["AKSHAYA"], item)
-		case 'K':
-			lotteryCodesMap["KARUNYA(KR"] = append(lotteryCodesMap["KARUNYA(KR"], item)
-		case 'N':
-			lotteryCodesMap["NIRMAL"] = append(lotteryCodesMap["NIRMAL"], item)
-		case 'P':
-			lotteryCodesMap["KARUNYA PLUS"] = append(lotteryCodesMap["KARUNYA PLUS"], item)
-		default:
-			lotteryCodesMap["All"] = append(lotteryCodesMap["All"], item)
+		trimedItem := strings.TrimSpace(item)
+		if trimedItem != "" {
+			if _, ok := lotteryMap[trimedItem[0]]; ok {
+				lotteryCodesMap[lotteryMap[trimedItem[0]]] = append(lotteryCodesMap[lotteryMap[trimedItem[0]]], trimedItem)
+			} else {
+				lotteryCodesMap["All"] = append(lotteryCodesMap["All"], trimedItem)
+			}
 		}
 	}
-	//loop through pdfdatas
 	for _, item := range pdfDatas {
 		for key, val := range lotteryCodesMap {
 			if strings.Contains(item.Name, key) || key == "All" {
@@ -102,6 +98,7 @@ func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfM
 	}
 	return finalResults, nil
 }
+
 func StringInSlice(a string, list []string) bool {
 	for _, item := range list {
 		updatedCode := a

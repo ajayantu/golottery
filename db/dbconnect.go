@@ -27,13 +27,14 @@ func ConnectDB() *mongo.Collection {
 	}
 	fmt.Println("Mongodb connected successfully")
 	collection = client.Database(dbname).Collection(colname)
-
 	fmt.Println("collection reference is ready", collection)
 	return collection
 }
 
 func getAllResults(collection *mongo.Collection) []primitive.M {
-	cur, err := collection.Find(context.Background(), bson.D{{}})
+	opts := options.Find().SetSort(bson.D{{Key: "lotterydate", Value: -1}}).SetLimit(40)
+	cur, err := collection.Find(context.Background(), bson.D{{}}, opts)
+
 	if err != nil {
 		log.Fatal(err)
 	}
