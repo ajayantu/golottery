@@ -39,10 +39,12 @@ func RefreshResults(w http.ResponseWriter, r *http.Request) {
 				}})
 				return
 			}
-			db.CreateResult(collection, result)
+			results = append(results, result)
 		}
 	}
-
+	if len(results) > 0 {
+		db.InsertManyResults(collection, results)
+	}
 	helpers.Success(w, 200, results)
 
 }

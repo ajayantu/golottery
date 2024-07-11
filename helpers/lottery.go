@@ -53,6 +53,7 @@ func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []s
 		SeriesName:  seriesName,
 		LotteryDate: results.LotteryDate,
 		LotteryTime: results.LotteryTime,
+		SeriesLink:  pdfLink,
 		Results:     evaluationResults,
 	}
 	return finalResponse, nil

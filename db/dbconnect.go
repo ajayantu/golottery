@@ -74,11 +74,22 @@ func getByLotteryName(collection *mongo.Collection, lotteryName string) (primiti
 }
 func insertOneResult(result domain.GetLotteryResultRespose, collection *mongo.Collection) {
 	_, err := collection.InsertOne(context.Background(), result)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("inserted 1 result in db with id:")
+}
+func insertManyResult(result []domain.GetLotteryResultRespose, collection *mongo.Collection) {
+	var result1 []any
+	for _, item := range result {
+		result1 = append(result1, item)
+	}
+	_, err := collection.InsertMany(context.Background(), result1)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("inserted many result in db with id:")
 }
 
 func GetMyAllResults(collection *mongo.Collection) []domain.GetLotteryResultRespose {
@@ -122,6 +133,10 @@ func GetByLotteryName(collection *mongo.Collection, lotteryName string) domain.G
 	bson.Unmarshal(resultJson, &result)
 	return result
 }
-func CreateResult(collection *mongo.Collection, result domain.GetLotteryResultRespose) {
+func InsertOneResult(collection *mongo.Collection, result domain.GetLotteryResultRespose) {
 	insertOneResult(result, collection)
+}
+func InsertManyResults(collection *mongo.Collection, results []domain.GetLotteryResultRespose) {
+	fmt.Println("results to inser are", results)
+	insertManyResult(results, collection)
 }

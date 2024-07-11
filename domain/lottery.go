@@ -40,6 +40,7 @@ type CheckLotteryResultResponse struct {
 	SeriesName  string                    `json:"series_name,omitempty"`
 	LotteryDate time.Time                 `json:"series_date,omitempty"`
 	LotteryTime string                    `json:"series_time,omitempty"`
+	SeriesLink  string                    `json:"series_link,omitempty"`
 	Results     []EvaluateResultsResponse `json:"results"`
 }
 type AnalyzeLotteryResultResponse struct {
