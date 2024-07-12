@@ -51,9 +51,9 @@ type GetLotteriesRequest struct {
 	LotteryName string
 }
 type PdfData struct {
-	Name string
-	Date string
-	Link string
+	Name string `json:"lottery_name,omitempty"`
+	Date string `json:"lottery_date,omitempty"`
+	Link string `json:"lottery_link,omitempty"`
 }
 type HelloResponse struct {
 	Message string `json:"message"`
