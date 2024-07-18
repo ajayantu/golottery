@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"lotteryapi/domain"
+	"regexp"
 	"strings"
 )
 
@@ -99,11 +100,15 @@ func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfM
 	return finalResults, nil
 }
 
-func StringInSlice(a string, list []string) bool {
+func StringInSlice(inputCode string, list []string) bool {
+	trimmedCode := strings.TrimSpace(inputCode)
+	if !MatchFormat(trimmedCode) {
+		return false
+	}
 	for _, item := range list {
-		updatedCode := a
-		if len(item) == 4 {
-			updatedCode = a[len(a)-4:]
+		updatedCode := trimmedCode
+		if len(item) == 4 && len(inputCode) >= 4 {
+			updatedCode = inputCode[len(inputCode)-4:]
 		}
 		if item == updatedCode {
 			return true
@@ -139,4 +144,9 @@ func MapPdfResultToName(pdfResults []domain.GetLotteryResultRespose) map[string]
 		pdfMap[item.LotteryName] = item
 	}
 	return pdfMap
+}
+func MatchFormat(input string) bool {
+	format1 := regexp.MustCompile(`^[A-Z]{2} \d{6}$`)
+	format2 := regexp.MustCompile(`^\d{4}$`)
+	return format1.MatchString(input) || format2.MatchString(input)
 }
