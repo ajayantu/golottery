@@ -32,7 +32,7 @@ func AnalyzeResults(w http.ResponseWriter, r *http.Request) {
 		//specific lottery's all series
 		mapedData := helpers.MapPdfDatas(pdfdatas)
 		if _, ok := mapedData[reqParams.LotteryName]; ok {
-			finalResults, err = helpers.EvaluateAllLotteries(mapedData[reqParams.LotteryName], reqParams.LotteryCodes, pdfMap)
+			finalResults, err = helpers.EvaluateAllLotteries(mapedData[reqParams.LotteryName], reqParams.LotteryCodes, pdfMap, reqParams.Templating)
 			if err != nil {
 				helpers.Fail(w, http.StatusInternalServerError, []helpers.FailStruct{{
 					Message:    err.Error(),
@@ -45,7 +45,7 @@ func AnalyzeResults(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		//all lottery all series
-		finalResults, err = helpers.EvaluateAllLotteries(pdfdatas, reqParams.LotteryCodes, pdfMap)
+		finalResults, err = helpers.EvaluateAllLotteries(pdfdatas, reqParams.LotteryCodes, pdfMap, reqParams.Templating)
 		if err != nil {
 			helpers.Fail(w, http.StatusInternalServerError, []helpers.FailStruct{{
 				Message:    err.Error(),

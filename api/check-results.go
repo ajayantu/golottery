@@ -29,7 +29,7 @@ func CheckResults(w http.ResponseWriter, r *http.Request) {
 	collection := db.ConnectDB()
 	dbResults := db.GetMyAllResults(collection)
 	pdfMap := helpers.MapPdfResultToName(dbResults)
-	finalResults, err = helpers.EvaluateResultsFromLink(pdfdatas[0].Name, pdfdatas[0].Link, reqParams.LotteryCodes, pdfMap)
+	finalResults, err = helpers.EvaluateResultsFromLink(pdfdatas[0].Name, pdfdatas[0].Link, reqParams.LotteryCodes, pdfMap, reqParams.Templating)
 	if err != nil {
 		helpers.Fail(w, http.StatusInternalServerError, []helpers.FailStruct{{
 			Message:    err.Error(),

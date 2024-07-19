@@ -19,7 +19,7 @@ func ExtractResultsFromLink(seriesName string, pdfLink string) (domain.GetLotter
 	return results, nil
 }
 
-func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []string, pdfMap map[string]domain.GetLotteryResultRespose) (domain.CheckLotteryResultResponse, error) {
+func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []string, pdfMap map[string]domain.GetLotteryResultRespose, templating bool) (domain.CheckLotteryResultResponse, error) {
 	dbResults := pdfMap[seriesName]
 	var results domain.GetLotteryResultRespose
 	var err error
@@ -36,15 +36,28 @@ func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []s
 	evaluationResults := []domain.EvaluateResultsResponse{}
 	for key, item := range results.LotteryResults {
 		for _, lotteryCode := range lotteryCodes {
-			if StringInSlice(lotteryCode, item.PrizeCodes) {
+			//check if lottery code uses templating
+			trimmedCode := strings.TrimSpace(lotteryCode)
+			if len(trimmedCode) == 9 && strings.Contains(trimmedCode, "$") {
+				if templating {
+					templateMatches := FindTemplateMatches(lotteryCode, item.PrizeCodes, key, item.PrizeMoney)
+					if len(templateMatches) > 0 {
+						evaluationResults = append(evaluationResults, templateMatches...)
+					}
+				} else {
+					continue
+				}
+			} else {
+				if StringInSlice(trimmedCode, item.PrizeCodes) {
 
-				evaluationResults = append(evaluationResults,
-					domain.EvaluateResultsResponse{
-						PrizePosition: key,
-						PrizeMoney:    item.PrizeMoney,
-						WinnerCode:    lotteryCode,
-					},
-				)
+					evaluationResults = append(evaluationResults,
+						domain.EvaluateResultsResponse{
+							PrizePosition: key,
+							PrizeMoney:    item.PrizeMoney,
+							WinnerCode:    lotteryCode,
+						},
+					)
+				}
 			}
 		}
 	}
@@ -60,7 +73,7 @@ func EvaluateResultsFromLink(seriesName string, pdfLink string, lotteryCodes []s
 	return finalResponse, nil
 }
 
-func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfMap map[string]domain.GetLotteryResultRespose) (domain.AnalyzeLotteryResultResponse, error) {
+func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfMap map[string]domain.GetLotteryResultRespose, templating bool) (domain.AnalyzeLotteryResultResponse, error) {
 	var finalResults domain.AnalyzeLotteryResultResponse
 	lotteryMap := map[byte]string{
 		'F': "FIFTY-FIFTY",
@@ -86,7 +99,7 @@ func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfM
 		for key, val := range lotteryCodesMap {
 			if strings.Contains(item.Name, key) || key == "All" {
 				//check if item/lotterypdf contains  lotterycodes from map
-				results, err := EvaluateResultsFromLink(item.Name, item.Link, val, pdfMap)
+				results, err := EvaluateResultsFromLink(item.Name, item.Link, val, pdfMap, templating)
 				if err != nil {
 					return domain.AnalyzeLotteryResultResponse{}, err
 				}
@@ -101,12 +114,11 @@ func EvaluateAllLotteries(pdfDatas []domain.PdfData, lotteryCodes []string, pdfM
 }
 
 func StringInSlice(inputCode string, list []string) bool {
-	trimmedCode := strings.TrimSpace(inputCode)
-	if !MatchFormat(trimmedCode) {
+	if !MatchFormat(inputCode) {
 		return false
 	}
 	for _, item := range list {
-		updatedCode := trimmedCode
+		updatedCode := inputCode
 		if len(item) == 4 && len(inputCode) >= 4 {
 			updatedCode = inputCode[len(inputCode)-4:]
 		}
@@ -149,4 +161,36 @@ func MatchFormat(input string) bool {
 	format1 := regexp.MustCompile(`^[A-Z]{2} \d{6}$`)
 	format2 := regexp.MustCompile(`^\d{4}$`)
 	return format1.MatchString(input) || format2.MatchString(input)
+}
+func FindTemplateMatches(inputTemplate string, list []string, prizePosition string, prizeMoney string) []domain.EvaluateResultsResponse {
+	var results []domain.EvaluateResultsResponse
+	var templateLen = len(inputTemplate)
+	for _, item := range list {
+		itemlen := len(item)
+		paddingLength := templateLen - itemlen
+		if paddingLength < 0 {
+			continue
+		}
+		updatedItem := item
+		if paddingLength > 0 {
+			updatedItem = strings.Repeat("$", paddingLength) + updatedItem
+			updatedItem = updatedItem[:2] + " " + updatedItem[3:]
+		}
+		match := true
+		for i := 0; i < templateLen; i++ {
+			if inputTemplate[i] != '$' && inputTemplate[i] != updatedItem[i] {
+				match = false
+				break
+			}
+		}
+		if match {
+			results = append(results, domain.EvaluateResultsResponse{
+				PrizePosition: prizePosition,
+				PrizeMoney:    prizeMoney,
+				WinnerCode:    item,
+			})
+		}
+	}
+
+	return results
 }

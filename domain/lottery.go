@@ -22,11 +22,13 @@ type CheckLotteryResultRequest struct {
 	LotteryName      string
 	SeriesName       string
 	LotteryCodes     []string
+	Templating       bool
 }
 type AnalyzeLotteryResultRequest struct {
 	LotteryDateRange []string
 	LotteryName      string
 	LotteryCodes     []string
+	Templating       bool
 }
 type EvaluateResultsResponse struct {
 	SeriesName    string `json:"series_name,omitempty"`
