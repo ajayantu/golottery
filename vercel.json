@@ -1,0 +1,12 @@
+{
+  "build": {
+    "env": {
+      "GO_BUILD_FLAGS": "-ldflags '-s -w'"
+    }
+  },
+  "functions": {
+    "api/*.go": {
+      "maxDuration": 30
+    }
+  }
+}
