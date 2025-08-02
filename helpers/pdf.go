@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"os"
 
 	"lotteryapi/domain"
 	"regexp"
