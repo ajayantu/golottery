@@ -154,7 +154,7 @@ func ExtractPdfLink(seriesName string) ([]domain.PdfData, error) {
 		}
 
 	})
-	err := c.Visit("https://statelottery.kerala.gov.in/index.php/lottery-result-view")
+	err := c.Visit(os.Getenv("LOTTERY_URl"))
 	if err != nil {
 		return []domain.PdfData{}, fmt.Errorf("error in scraping the results")
 	}
